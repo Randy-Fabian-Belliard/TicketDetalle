@@ -1,8 +1,8 @@
-@page "/R_Tickets"
-@page "/R_Tickets/{TicketId:int}"
+@page "/R_Ticket"
+@page "/R_Ticket/{TicketId:int}"
 @inject HttpClient httpClient
 
-<EditForm Model="Tickets" >
+<EditForm Model="Tickets" OnValidSubmit="Guardar" >
     <DataAnnotationsValidator />
 
     <div class="container">
@@ -23,43 +23,43 @@
 
                 <div class="mb-3">
                     <label class="form-label" for="Fecha"> Fecha:</label>
-                    <InputDate @bind-Value=" Tickets.Fecha" class="form-control" />
+                    <InputDate @bind-Value=" Tickets.Fecha" class="form-control"style="max-width: 180px;" />
                     <ValidationMessage For="@(() => Tickets.Fecha)" />
                 </div>
 
                 <div class="mb-3"> Tickets
                     <label class="form-label" for="Solicitado Por">Solicitado Por:</label>
-                    <InputText @bind-Value=" Tickets.SolicitadoPor" class="form-control" />
+                    <InputText @bind-Value=" Tickets.SolicitadoPor" class="form-control"  />
                     <ValidationMessage For="@(() => Tickets.SolicitadoPor)" />
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label" for="Asunto">Asunto</label>
                     <InputText @bind-Value=" Tickets.Asunto" class="form-control" />
-                    <ValidationMessage For="@(() => Tickets.Sunto)" />
+                    <ValidationMessage For="@(() => Tickets.Asunto)" />
                 </div>
 
-                @*Limite de Credito*@
+
                 <div class="mb-3">
-                    <label class="form-label" for="Direccion">L&iacute;mite de Cr&eacute;dito:</label>
-                    <InputNumber @bind-Value="Cliente.LimiteCredito" class="form-control" />
-                    <ValidationMessage For="@(() =>  Tickets.LimiteCredito)" />
+                    <label class="form-label" for="Descripcion">Descripci&oacute;n:</label>
+                    <InputTextArea @bind-Value="Tickets.Descripcion" class="form-control" />
+                    <ValidationMessage For="@(() =>  Tickets.Descripcion)" />
                 </div>
 
 
-                    <fieldset class="border-success border border-1">
+                    <fieldset class="border-success border border-0" >
                         <h3>Mensajes</h3>
                         <div>
 
                             @*Nombre *@
                             <div class="col-5">
-                                <label>Nombre:</label>
-                                <InputText class="form-control" @bind-Value="Nombre"></InputText>
+                                <label>Emisor:</label>
+                                <InputText class="form-control" @bind-Value="EmisorTicket"></InputText>
                             </div>
 
                             @*Mensaje *@
                             <div class="row">
-                                <div class="col-5">
+                                <div class="col-5"  >
                                     <label>Mensaje</label>
                                     <InputTextArea class="form-control" @bind-Value="MensajeTicket"></InputTextArea>
                                 </div>
@@ -71,70 +71,167 @@
                                         <span class="oi oi-plus">Agregar</span>
                                     </button>
                                 </div>
-
-                            </div>
-                            @if (ValidacionD.Length > 0)
-                            {
-                                <label class="text-danger">@ValidacionD</label>
-                            }
-                        </div>
-
-
                             <hr />
-                            <table class="table table-bordered table-light m-1">
+                            <table class="table table-bordered table-light m-1" style="max-width: 1800px;">
                                 <thead class="thead">
                                     <tr class="table">
-                                        <th>Nombre</th>
+                                        <th>Emisor</th>
                                         <th>Mensaje</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var detalle in tickets.TicketDetalle)
+                                    @foreach (var detalle in Tickets.TicketsDetalle)
                                     {
                                         <tr>
                                             <td>@detalle.Emisor</td>
                                             <td>@detalle.Mensaje</td>
-                                            <td> <button class="btn btn-outline-primary" @onclick="@(() => RemoverDetalle(detalle))"><i class="oi oi-trash" />Remover</button></td>
+                                            <td> <button  @onclick="@(() => RemoverDetalle(detalle))"><i class="oi oi-trash" />Remover</button></td>
                                         </tr>
                                     }
                                 </tbody>
                             </table>
 
                             
-                            <div class="row justify-content-between">
+                            <div class="row justify-content-between" >
                                 <div class="col-4">
                                     <label>Cantidad de Mensajes</label>
-                                    <div class="input-group mb-3">
-                                        <span class="form-control">@tickets.TicketsDetalle.Count()</span>
+                                    <div class="input-group mb-3" style="max-width: 50px;">
+                                        <span class="form-control">@Tickets.TicketsDetalle.Count()</span>
                                     </div>
                                 </div>
                             </div>
-
-                            <hr /> 
+                        </div>
+                            <hr />
+                    </div>  
                     </fieldset>
 
             </div>
 
             <div class="card-footer d-flex justify-content-center">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-outline-primary" >Nuevo <i class="oi oi-file" /></button>
+                    <button type="button" class="btn btn-outline-primary"  @onclick="Nuevo">Nuevo <i class="oi oi-file" /></button>
                     <button type="submit" class="btn btn-outline-success">Guardar <i class="oi oi-document" /></button>
-                    <button type="button" class="btn btn-outline-danger" >Eliminar <i class="oi oi-trash" /></button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="Eliminar">Eliminar <i class="oi oi-trash" /></button>
                 </div>
             </div>
         </div>
     </div>
-    @if (Mensaje.Length > 0)
-    {
-        <label class="text-danger">@Mensaje</label>
-    }
 </EditForm>
 
 @code{
-
+    
+public string VD {get; set;}
 [Parameter]
 
 public int TicketId {get; set;}
 public Tickets Tickets {get; set;} = new Tickets();
 
+public string MensajeTicket {get; set;} = string.Empty;
+
+public string EmisorTicket { get; set; } = string.Empty;
+
+public string Mensaje { get; set; } = string.Empty;
+
+
+ protected override async Task OnInitializedAsync()
+    {
+
+        if (TicketId > 0)
+        {
+            this.Tickets.TicketId = TicketId;
+            await Buscar();
+        }
+    }
+    
+    public async Task Guardar()
+    {
+        using var response = await httpClient.PostAsJsonAsync($"api/Tickets" ,Tickets);
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+        var TicketDevuelto = await response.Content.ReadFromJsonAsync<Tickets>();
+        if (TicketDevuelto is not null)
+        {
+            Tickets = TicketDevuelto;
+            StateHasChanged();
+            Nuevo();
+        }
+    }
+
+
+        public async Task Buscar()
+    {
+        var TicketEncontrado = await httpClient.GetFromJsonAsync<Tickets>($"api/Tickets/{Tickets.TicketId}");
+        if (TicketEncontrado != null)
+        {
+            this.Tickets = TicketEncontrado;
+            StateHasChanged();
+        }
+        else
+        {
+
+        }
+    }
+
+        public void AgregarDetalle()
+    {
+      if(!ValidarDetalle()) 
+       {
+        return;
+       }
+        Tickets.TicketsDetalle.Add(new TicketDetalle()
+        {
+                Emisor = EmisorTicket,
+                Mensaje = MensajeTicket
+        });
+        EmisorTicket = string.Empty;
+        MensajeTicket = string.Empty;
+        StateHasChanged();
+    }
+
+        public void RemoverDetalle(TicketDetalle ticketDetalle)
+    {
+        EmisorTicket = ticketDetalle.Emisor;
+        MensajeTicket = ticketDetalle.Mensaje;
+
+        Tickets.TicketsDetalle.Remove(ticketDetalle);
+    }
+
+        public void Nuevo()
+    {
+        this.Tickets = new Tickets();
+        Mensaje = string.Empty;
+
+        EmisorTicket = string.Empty;
+    }
+
+    public async Task Eliminar()
+    {
+        using var response = await httpClient.DeleteAsync($"api/Tickets/{Tickets.TicketId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            Mensaje = response.ReasonPhrase ?? "error";
+            return;
+        }
+        else
+            Nuevo();
+    }
+
+
+    public bool ValidarDetalle()
+    {
+        VD = string.Empty;
+        if(string.IsNullOrWhiteSpace(EmisorTicket))
+        {
+            VD = "El nombre es obligatorio";
+        }
+
+        if(string.IsNullOrWhiteSpace(MensajeTicket))
+        {
+            VD += "El mensaje es obligatorio";
+        }
+
+        return VD.Length == 0;
+    }
 }

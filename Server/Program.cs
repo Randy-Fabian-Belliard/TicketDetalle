@@ -1,6 +1,13 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
+using TicketsDetalle.Server.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var ConStr = builder.Configuration.GetConnectionString("ConStr");
+builder.Services.AddDbContextFactory<TicketContext>(options =>
+    options.UseSqlite(ConStr)
+);
 
 // Add services to the container.
 

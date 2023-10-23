@@ -26,7 +26,7 @@ namespace TicketsDetalle.Server.Controllers
         {
           if (_context.Tickets == null)
           {
-              return NotFound();
+            return NotFound();
           }
             return await _context.Tickets.ToListAsync();
         }
@@ -37,7 +37,7 @@ namespace TicketsDetalle.Server.Controllers
         {
           if (_context.Tickets == null)
           {
-              return NotFound();
+            return NotFound();
           }
             var tickets = await _context.Tickets
                 .Include(c => c.TicketsDetalle)
